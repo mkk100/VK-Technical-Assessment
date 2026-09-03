@@ -24,11 +24,6 @@ cd data-handling
 go test ./...
 ```
 
-No mock service needed — tests drive the fetchers against in-process
-`httptest` servers. `data-handling/acceptance/` holds the behavior tests
-(normalization, malformed records, retry, partial failure, pagination);
-`internal/pipeline/` holds unit tests.
-
 ## Important assumptions
 - One source failing is a partial run, not a total failure — the other
   sources' products are still returned.
