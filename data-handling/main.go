@@ -21,6 +21,7 @@ func main() {
 	all = append(all, productsA...)
 	all = append(all, productsB...)
 	all = append(all, productsC...)
+	all = dedupe(all)
 
 	out, err := json.MarshalIndent(all, "", "  ")
 	if err != nil {

@@ -11,7 +11,8 @@ import (
 
 type Product struct {
 	ID       string  `json:"id"`
-	Name   string  `json:"name"`
+	Name     string  `json:"name"`
+	Source   string  `json:"source"`
 	Price    float64 `json:"price"`
 	Category string  `json:"category"`
 }

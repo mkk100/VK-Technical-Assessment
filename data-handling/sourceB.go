@@ -38,9 +38,10 @@ func fetchSourceB() ([]Product, error) {
 				continue
 		}
 		out = append(out, Product{
-			ID: it.Sku, 
-			Name: it.Title,
-			Price: float64(cents) / 100.0, 
+			ID:       it.Sku,
+			Name:     it.Title,
+			Source:   "source_b",
+			Price:    float64(cents) / 100.0,
 			Category: it.Department,
 		})
 		}

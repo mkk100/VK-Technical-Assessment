@@ -30,7 +30,8 @@ func fetchSourceA() ([]Product, error) {
 		for _, it := range p.Products {
 			out = append(out, Product{
 				ID:       it.ID,
-				Name: 	  it.Name,
+				Name:     it.Name,
+				Source:   "source_a",
 				Price:    it.Price,
 				Category: it.Category,
 			})

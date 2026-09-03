@@ -36,7 +36,8 @@ func fetchSourceC() ([]Product, error) {
 
 			out = append(out, Product{
 				ID:       it.Product_id,
-				Name: 	  it.Title,
+				Name:     it.Title,
+				Source:   "source_c",
 				Price:    priceFloat,
 				Category: it.Type,
 			})
