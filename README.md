@@ -4,11 +4,11 @@ Aggregates product data from three mock upstream APIs, normalizes it into one
 schema, and writes a consolidated JSON list plus a run summary.
 
 ## Language
-**Go** - static typing, catches the per-source schema-mapping mistakes
+**Go** - static typing, catches the per-source schema-mapping mistakes, also a more familiar language
 
 ## Run
 
-Start the mock API (terminal 1):
+Start the mock API (terminal 1)
 
 Run the pipeline (terminal 2):
 
