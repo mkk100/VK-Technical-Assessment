@@ -4,30 +4,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"time"
 )
 
 func main() {
-	productsA, errA := fetchSourceA()
-	productsB, errB := fetchSourceB()
-	productsC, errC := fetchSourceC()
+	start := time.Now()
 
-	for _, e := range []error{errA, errB, errC} {
-		if e != nil {
-			log.Printf("source error: %v", e)
-		}
-	}
+	pA, rA := runSource("source_a", fetchSourceA)
+	pB, rB := runSource("source_b", fetchSourceB)
+	pC, rC := runSource("source_c", fetchSourceC)
 
 	var all []Product
-	all = append(all, productsA...)
-	all = append(all, productsB...)
-	all = append(all, productsC...)
+	all = append(all, pA...)
+	all = append(all, pB...)
+	all = append(all, pC...)
 	all = dedupe(all)
 
+	// run summary -> stderr
+	summary := emitSummary([]SourceResult{rA, rB, rC}, time.Since(start), len(all))
+
+	// products -> stdout (the deliverable)
 	out, err := json.MarshalIndent(all, "", "  ")
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(string(out))
-}
 
-// module is a tree of packages, and each folder is a module, main is a special one.
+	if summary.PartialRun {
+		os.Exit(2) // ran, but at least one source failed
+	}
+}

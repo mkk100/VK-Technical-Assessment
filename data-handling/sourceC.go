@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 )
 
@@ -29,9 +30,10 @@ func fetchSourceC() ([]Product, error) {
 		
 		for _, it := range p.Data {
 			priceFloat, err := strconv.ParseFloat(it.Price, 64)
-			if err != nil {
-				fmt.Println("Error parsing string:", err)
-				return nil, err
+			if err != nil || it.Product_id == "" {
+				dropped["source_c"]++
+				log.Printf("source_c: dropping malformed record id=%q price=%q", it.Product_id, it.Price)
+				continue
 			}
 
 			out = append(out, Product{

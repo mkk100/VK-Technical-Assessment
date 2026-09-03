@@ -34,9 +34,10 @@ func fetchSourceB() ([]Product, error) {
 		for _, it := range p.Items {
 			cents, ok := parseCents(it.Amount_Cents) // parse the invalid Amount_Cents variable
 			if !ok || it.Sku == "" {
+				dropped["source_b"]++
 				log.Printf("source_b: dropping malformed record sku=%q", it.Sku)
 				continue
-		}
+			}
 		out = append(out, Product{
 			ID:       it.Sku,
 			Name:     it.Title,
