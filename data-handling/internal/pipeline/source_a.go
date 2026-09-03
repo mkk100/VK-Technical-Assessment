@@ -1,8 +1,6 @@
-package main
+package pipeline
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type sourceAPage struct {
 	Page       int `json:"page"`
@@ -15,12 +13,12 @@ type sourceAPage struct {
 	} `json:"products"`
 }
 
-// fetchSourceA walks every page and returns normalized products.
-func fetchSourceA() ([]Product, error) {
+// FetchSourceA walks page-based pagination and returns normalized products.
+func FetchSourceA() ([]Product, error) {
 	var out []Product
 
 	for page := 1; ; page++ {
-		url := fmt.Sprintf("%s/source-a/products?page=%d", baseURL, page)
+		url := fmt.Sprintf("%s/source-a/products?page=%d", BaseURL, page)
 
 		var p sourceAPage
 		if err := getJSON(url, &p); err != nil {
@@ -28,6 +26,11 @@ func fetchSourceA() ([]Product, error) {
 		}
 
 		for _, it := range p.Products {
+			if it.ID == "" {
+				dropped["source_a"]++
+				logger.Warn("dropping malformed record", "source", "source_a", "reason", "empty id")
+				continue
+			}
 			out = append(out, Product{
 				ID:       it.ID,
 				Name:     it.Name,

@@ -1,4 +1,4 @@
-package main
+package pipeline
 
 import "testing"
 
@@ -10,7 +10,7 @@ func TestDedupe(t *testing.T) {
 		{ID: "2", Source: "source_a"},
 	}
 
-	got := dedupe(in)
+	got := Dedupe(in)
 
 	if len(got) != 3 {
 		t.Fatalf("want 3 products, got %d: %+v", len(got), got)

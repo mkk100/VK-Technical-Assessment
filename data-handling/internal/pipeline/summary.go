@@ -1,8 +1,8 @@
-package main
+package pipeline
 
 import (
 	"encoding/json"
-	"os"
+	"io"
 	"time"
 )
 
@@ -16,7 +16,7 @@ type SourceResult struct {
 	Elapsed string `json:"elapsed"`
 }
 
-// RunSummary is the top-level observability object, written to stderr.
+// RunSummary is the top-level observability object.
 type RunSummary struct {
 	Elapsed       string         `json:"elapsed"`
 	TotalProducts int            `json:"total_products"` // after dedupe
@@ -25,11 +25,12 @@ type RunSummary struct {
 }
 
 // dropped counts malformed records skipped per source. The fetchers write to it;
-// runSource reads it back into each SourceResult.
+// RunSource reads it back into each SourceResult.
 var dropped = map[string]int{}
 
-// runSource times a fetcher and captures its result.
-func runSource(name string, fn func() ([]Product, error)) ([]Product, SourceResult) {
+// RunSource times a fetcher, captures its result, and logs start/finish.
+func RunSource(name string, fn func() ([]Product, error)) ([]Product, SourceResult) {
+	logger.Info("source start", "source", name)
 	start := time.Now()
 	items, err := fn()
 	res := SourceResult{
@@ -41,12 +42,15 @@ func runSource(name string, fn func() ([]Product, error)) ([]Product, SourceResu
 	}
 	if err != nil {
 		res.Error = err.Error()
+		logger.Error("source failed", "source", name, "kept", res.Kept, "dropped", res.Dropped, "elapsed", res.Elapsed, "err", err)
+	} else {
+		logger.Info("source done", "source", name, "kept", res.Kept, "dropped", res.Dropped, "elapsed", res.Elapsed)
 	}
 	return items, res
 }
 
-// emitSummary assembles the RunSummary and writes it to stderr as JSON.
-func emitSummary(sources []SourceResult, elapsed time.Duration, totalProducts int) RunSummary {
+// EmitSummary assembles the RunSummary and writes it to w as indented JSON.
+func EmitSummary(w io.Writer, sources []SourceResult, elapsed time.Duration, totalProducts int) RunSummary {
 	s := RunSummary{
 		Elapsed:       elapsed.Round(time.Millisecond).String(),
 		TotalProducts: totalProducts,
@@ -57,7 +61,10 @@ func emitSummary(sources []SourceResult, elapsed time.Duration, totalProducts in
 			s.PartialRun = true
 		}
 	}
-	enc := json.NewEncoder(os.Stderr)
+
+	logger.Info("run complete", "total_products", totalProducts, "partial_run", s.PartialRun, "elapsed", s.Elapsed)
+
+	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	enc.Encode(s)
 	return s
