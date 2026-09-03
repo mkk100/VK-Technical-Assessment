@@ -1,9 +1,6 @@
 package pipeline
 
-import (
-	"encoding/json"
-	"fmt"
-)
+import "encoding/json"
 
 type sourceBcursor struct {
 	Items []struct {
@@ -19,11 +16,12 @@ type sourceBcursor struct {
 // non-numeric string; those records are dropped as malformed.
 func FetchSourceB() ([]Product, error) {
 	var out []Product
+	cursor := ""
 
-	for cursor := 1; ; cursor++ {
+	for {
 		url := BaseURL + "/source-b/products"
-		if cursor > 1 {
-			url += fmt.Sprintf("?cursor=cursor-%d", cursor)
+		if cursor != "" {
+			url += "?cursor=" + cursor
 		}
 
 		var p sourceBcursor
@@ -50,6 +48,7 @@ func FetchSourceB() ([]Product, error) {
 		if p.NextCursor == "" {
 			break
 		}
+		cursor = p.NextCursor
 	}
 	return out, nil
 }

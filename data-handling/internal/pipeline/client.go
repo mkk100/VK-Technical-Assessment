@@ -9,16 +9,22 @@ import (
 	"time"
 )
 
-const maxRetries = 4
+// MaxRetries is the number of retries per request (so MaxRetries+1 attempts).
+const MaxRetries = 4
 
-var httpClient = &http.Client{Timeout: 5 * time.Second}
+var (
+	httpClient = &http.Client{Timeout: 5 * time.Second}
+	// BaseBackoff is the initial retry delay, doubled on each retry. Exposed so
+	// tests can shrink it; production keeps the default.
+	BaseBackoff = 300 * time.Millisecond
+)
 
 // getJSON fetches url and decodes the body into v. It retries 429 and 5xx
 // (honoring Retry-After) with exponential backoff, and fails fast on 4xx.
 func getJSON(url string, v any) error {
-	backoff := 300 * time.Millisecond
+	backoff := BaseBackoff
 
-	for attempt := 0; attempt <= maxRetries; attempt++ {
+	for attempt := 0; attempt <= MaxRetries; attempt++ {
 		resp, err := httpClient.Get(url)
 		if err != nil {
 			logger.Error("request failed", "url", url, "err", err)
@@ -33,7 +39,7 @@ func getJSON(url string, v any) error {
 		}
 
 		if resp.StatusCode == 429 || resp.StatusCode >= 500 {
-			if attempt == maxRetries {
+			if attempt == MaxRetries {
 				logger.Error("upstream give up", "url", url, "status", resp.StatusCode, "attempts", attempt+1)
 				return fmt.Errorf("GET %s: gave up, last status %d", url, resp.StatusCode)
 			}

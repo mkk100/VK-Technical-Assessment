@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"io"
 	"log/slog"
 	"os"
 )
@@ -11,3 +12,9 @@ import (
 var logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 	Level: slog.LevelInfo,
 }))
+
+// SetLogOutput redirects structured logs to w (e.g. a file, or io.Discard in
+// tests). Not safe to call concurrently with a run.
+func SetLogOutput(w io.Writer) {
+	logger = slog.New(slog.NewTextHandler(w, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}

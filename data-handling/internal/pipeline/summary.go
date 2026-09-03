@@ -28,6 +28,10 @@ type RunSummary struct {
 // RunSource reads it back into each SourceResult.
 var dropped = map[string]int{}
 
+// ResetDropped clears the malformed-record counters. Intended for tests that
+// run fetchers repeatedly in one process.
+func ResetDropped() { clear(dropped) }
+
 // RunSource times a fetcher, captures its result, and logs start/finish.
 func RunSource(name string, fn func() ([]Product, error)) ([]Product, SourceResult) {
 	logger.Info("source start", "source", name)
